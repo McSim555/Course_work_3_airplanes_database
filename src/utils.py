@@ -2,13 +2,14 @@ import requests
 
 
 def get_countries() -> str:
-    countries = input('Введите список стран через запятую и пробел на английском языке: ').lower()
+    countries = input('Введите список стран через запятую и пробел на английском языке: ').upper()
     return countries
 
 def get_airplanes_in_countries(countries) -> list:
 
     countries_airplanes = countries.split(", ")
     aeroplanes_list = []
+    aeroplanes_dict = {}
 
     for country in countries_airplanes:
 
@@ -36,7 +37,24 @@ def get_airplanes_in_countries(countries) -> list:
 
         response = requests.get(url=opensky_url, params=params)
 
-        aeroplanes = response.json()
-        aeroplanes_list.append(aeroplanes)
+        airplanes = response.json()
+        for airplane in airplanes['states']:
+            aeroplanes_short = {
+                    "ID": airplane[0],
+                    "call_sign": airplane[1],
+                    "registration_country": airplane[2],
+                    "flight_parameters": {
+                        "ground_speed": airplane[9],
+                        "altitude": airplane[-4],
+                        "on_ground_status": airplane[8]
+                    }
+                }
+
+            aeroplanes_dict = {
+                'country': country,
+                'airplanes': aeroplanes_short
+            }
+
+            aeroplanes_list.append(aeroplanes_dict)
 
     return aeroplanes_list
