@@ -2,22 +2,24 @@ import requests
 from requests import HTTPError, Timeout, RequestException
 
 
-def get_countries() -> str:
+def get_countries() -> list[str] | None:
     i = 0
     while i < 1:
         countries = input('Введите список стран через запятую и пробел на английском языке: ').upper()
-        if countries != '' and countries.isalpha():
-            i += 1
-            return countries
-        else:
-            print('Повторите ввод.')
+        countries_airplanes = countries.split(", ")
+        for country in countries_airplanes:
+            if country != '' and country.isalpha():
+                i += 1
+            else:
+                print('Повторите ввод.')
+        return countries_airplanes
 
-def get_airplanes_in_countries(countries) -> list | None:
+def get_airplanes_in_countries(countries_airplanes) -> list | None:
 
-    countries_airplanes = countries.split(", ")
-    aeroplanes_list = []
+    aeroplanes_by_country = []
 
     for country in countries_airplanes:
+        aeroplanes_by_country_dict = {}
         try:
             openstreetmap_url = "https://nominatim.openstreetmap.org/search"
             headers_nominatim = {"User-Agent": "test-app/1.0"}
@@ -68,6 +70,7 @@ def get_airplanes_in_countries(countries) -> list | None:
         try:
             response = requests.get(url=opensky_url, params=params, timeout=10)
             airplanes = response.json()
+            aeroplanes_list = []
 
             for airplane in airplanes['states']:
                 aeroplanes_short = {
@@ -79,12 +82,11 @@ def get_airplanes_in_countries(countries) -> list | None:
                         "on_ground_status": airplane[8]
                     }
 
-                aeroplanes_dict = {
-                    'country': country,
-                    'airplanes': aeroplanes_short
-                }
+                # aeroplanes_dict = {
+                #     'airplanes': aeroplanes_short
+                # }
 
-                aeroplanes_list.append(aeroplanes_dict)
+                aeroplanes_list.append(aeroplanes_short)
         except HTTPError as e:
             print(f"HTTP-ошибка: {e.response.status_code}")
             if e.response.status_code == 404:
@@ -105,5 +107,6 @@ def get_airplanes_in_countries(countries) -> list | None:
         except RequestException as e:
             print(f"Общая ошибка запроса: {e}")
             return None
-
-    return aeroplanes_list
+        aeroplanes_by_country_dict = dict(country=country, airplanes=aeroplanes_list)
+        aeroplanes_by_country.append(aeroplanes_by_country_dict)
+    return aeroplanes_by_country
