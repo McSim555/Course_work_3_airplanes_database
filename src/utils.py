@@ -32,12 +32,11 @@ def get_countries_data(countries_airplanes) -> list | None:
             data = response.json()
             if not data:
                 print('Страны не найдены, попробуйте ввести другие на английском языке')
-                break
 
-            # country_sky = data[0].get("boundingbox")
-            country_sky = data[0]
-            country_sky['name'] = country
-            countries_data.append(country_sky)
+            else:
+                country_sky = data[0]
+                country_sky['name'] = country
+                countries_data.append(country_sky)
 
         except HTTPError as e:
             print(f"HTTP-ошибка: {e.response.status_code}")
