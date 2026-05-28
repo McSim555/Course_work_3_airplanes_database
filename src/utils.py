@@ -3,16 +3,22 @@ from requests import HTTPError, Timeout, RequestException
 
 
 def get_countries() -> list[str] | None:
-    i = 0
-    while i < 1:
+    countries_airplanes_list = []
+    i = [0]
+    while 0 in i:
+        i = []
+        countries_airplanes_list = []
         countries = input('Введите список стран через запятую и пробел на английском языке: ').upper()
         countries_airplanes = countries.split(", ")
         for country in countries_airplanes:
             if country != '' and country.isalpha():
-                i += 1
+                i.append(1)
+                countries_airplanes_list.append(country)
             else:
-                print('Повторите ввод.')
-        return countries_airplanes
+                i.append(0)
+                print('Повторите ввод. Страна введена некорректно.')
+
+    return countries_airplanes_list
 
 def get_countries_data(countries_airplanes) -> list | None:
 
@@ -31,7 +37,7 @@ def get_countries_data(countries_airplanes) -> list | None:
 
             data = response.json()
             if not data:
-                print('Страны не найдены, попробуйте ввести другие на английском языке')
+                print(f'Страна {country} не найдена')
 
             else:
                 country_sky = data[0]
