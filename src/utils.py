@@ -14,12 +14,10 @@ def get_countries() -> list[str] | None:
                 print('Повторите ввод.')
         return countries_airplanes
 
-def get_airplanes_in_countries(countries_airplanes) -> list | None:
+def get_countries_data(countries_airplanes) -> list | None:
 
-    aeroplanes_by_country = []
-
+    countries_data = []
     for country in countries_airplanes:
-        aeroplanes_by_country_dict = {}
         try:
             openstreetmap_url = "https://nominatim.openstreetmap.org/search"
             headers_nominatim = {"User-Agent": "test-app/1.0"}
@@ -36,7 +34,10 @@ def get_airplanes_in_countries(countries_airplanes) -> list | None:
                 print('Страны не найдены, попробуйте ввести другие на английском языке')
                 break
 
-            country_sky = data[0].get("boundingbox")
+            # country_sky = data[0].get("boundingbox")
+            country_sky = data[0]
+            country_sky['name'] = country
+            countries_data.append(country_sky)
 
         except HTTPError as e:
             print(f"HTTP-ошибка: {e.response.status_code}")
@@ -58,13 +59,20 @@ def get_airplanes_in_countries(countries_airplanes) -> list | None:
         except RequestException as e:
             print(f"Общая ошибка запроса: {e}")
             return None
+    return countries_data
 
+
+def get_airplanes_in_countries(country_coordinates):
+
+    aeroplanes_by_country = []
+
+    for country in country_coordinates:
         opensky_url = "https://opensky-network.org/api/states/all?"
         params = {
-            "lamin": country_sky[0],
-            "lamax": country_sky[1],
-            "lomin": country_sky[2],
-            "lomax": country_sky[3]
+            "lamin": country.get("boundingbox")[0],
+            "lamax": country.get("boundingbox")[1],
+            "lomin": country.get("boundingbox")[2],
+            "lomax": country.get("boundingbox")[3]
         }
 
         try:
@@ -82,11 +90,8 @@ def get_airplanes_in_countries(countries_airplanes) -> list | None:
                         "on_ground_status": airplane[8]
                     }
 
-                # aeroplanes_dict = {
-                #     'airplanes': aeroplanes_short
-                # }
-
                 aeroplanes_list.append(aeroplanes_short)
+
         except HTTPError as e:
             print(f"HTTP-ошибка: {e.response.status_code}")
             if e.response.status_code == 404:
@@ -107,6 +112,9 @@ def get_airplanes_in_countries(countries_airplanes) -> list | None:
         except RequestException as e:
             print(f"Общая ошибка запроса: {e}")
             return None
+
         aeroplanes_by_country_dict = dict(country=country, airplanes=aeroplanes_list)
         aeroplanes_by_country.append(aeroplanes_by_country_dict)
+        aeroplanes_by_country_dict = {}
+
     return aeroplanes_by_country
