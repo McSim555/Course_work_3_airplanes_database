@@ -1,23 +1,20 @@
-from src.utils import get_countries_data, get_countries, get_airplanes_in_countries
-from requests import RequestException, HTTPError
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 import requests
+from requests import HTTPError, RequestException
+
+from src.utils import get_airplanes_in_countries, get_countries, get_countries_data
 
 
 def test_all_countries_alpha():
-    with patch('builtins.input', return_value='France, Germany, Italy'):
+    with patch("builtins.input", return_value="France, Germany, Italy"):
         result = get_countries()
-    assert result == ['FRANCE', 'GERMANY', 'ITALY']
+    assert result == ["FRANCE", "GERMANY", "ITALY"]
 
 
 def test_et_countries_data():
     mock_response = Mock()
-    mock_response.json.return_value = [{
-        "place_id": 123,
-        "lat": "55.75",
-        "lon": "37.62",
-        "display_name": "Russia"
-    }]
+    mock_response.json.return_value = [{"place_id": 123, "lat": "55.75", "lon": "37.62", "display_name": "Russia"}]
     with patch("src.utils.requests.get", return_value=mock_response) as mock_get:
         result = get_countries_data(["RUSSIA"])
 
@@ -36,16 +33,11 @@ def mock_success_response(*args, **kwargs):
     }
     return mock_resp
 
+
 def test_successful_airplanes_fetch():
     sample_countries = [
-        {
-            "name": "Russia",
-            "boundingbox": ["55.0", "56.0", "37.0", "38.0"]
-        },
-        {
-            "name": "France",
-            "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]
-        }
+        {"name": "Russia", "boundingbox": ["55.0", "56.0", "37.0", "38.0"]},
+        {"name": "France", "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]},
     ]
     with patch("src.utils.requests.get", side_effect=mock_success_response) as mock_get:
         result = get_airplanes_in_countries(sample_countries)
@@ -65,14 +57,8 @@ def test_successful_airplanes_fetch():
 
 def test_empty_api_response():
     sample_countries = [
-        {
-            "name": "Russia",
-            "boundingbox": ["55.0", "56.0", "37.0", "38.0"]
-        },
-        {
-            "name": "France",
-            "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]
-        }
+        {"name": "Russia", "boundingbox": ["55.0", "56.0", "37.0", "38.0"]},
+        {"name": "France", "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]},
     ]
     mock_resp = Mock()
     mock_resp.json.return_value = {"states": []}
@@ -83,16 +69,11 @@ def test_empty_api_response():
         assert len(result) == 1
         assert result[0]["airplanes"] == []
 
+
 def test_general_request_exception():
     sample_countries = [
-        {
-            "name": "Russia",
-            "boundingbox": ["55.0", "56.0", "37.0", "38.0"]
-        },
-        {
-            "name": "France",
-            "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]
-        }
+        {"name": "Russia", "boundingbox": ["55.0", "56.0", "37.0", "38.0"]},
+        {"name": "France", "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]},
     ]
     with patch("src.utils.requests.get", side_effect=RequestException("Network error")):
         result = get_airplanes_in_countries(sample_countries)
@@ -101,14 +82,8 @@ def test_general_request_exception():
 
 def test_connection_error():
     sample_countries = [
-        {
-            "name": "Russia",
-            "boundingbox": ["55.0", "56.0", "37.0", "38.0"]
-        },
-        {
-            "name": "France",
-            "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]
-        }
+        {"name": "Russia", "boundingbox": ["55.0", "56.0", "37.0", "38.0"]},
+        {"name": "France", "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]},
     ]
     with patch("src.utils.requests.get", side_effect=ConnectionError):
         result = get_airplanes_in_countries(sample_countries)
@@ -117,14 +92,8 @@ def test_connection_error():
 
 def test_http_404_error():
     sample_countries = [
-        {
-            "name": "Russia",
-            "boundingbox": ["55.0", "56.0", "37.0", "38.0"]
-        },
-        {
-            "name": "France",
-            "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]
-        }
+        {"name": "Russia", "boundingbox": ["55.0", "56.0", "37.0", "38.0"]},
+        {"name": "France", "boundingbox": ["42.0", "43.0", "-1.0", "0.0"]},
     ]
     error_resp = Mock()
     error_resp.status_code = 404
